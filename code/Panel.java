@@ -11,6 +11,7 @@ public class Panel extends JPanel {
     Maze maze;
     private String[] visited;
     private Stack<Node> currentPath;
+    private int index = 0;
     private boolean found = false;
     JLabel pathLabel;
     Node[] path;
@@ -30,9 +31,9 @@ public class Panel extends JPanel {
     @Override
     public void paintComponent(Graphics g){
         super.paintComponent(g);
-
-        paintNodes(g);
+        
         paintPath(g);
+        paintNodes(g);
 
         if(found && path != null){
             paintFoundPath(g);
@@ -82,7 +83,7 @@ public class Panel extends JPanel {
         for(int i = 0; i < path.length - 1; i++){
             Node current = path[i];
             Node next = path[i+1];
-            g.drawLine(current.x * 20 + 10, current.y * 20 + 10, next.x * 20 + 10, next.y * 10 + 10);
+            g.drawLine(current.x * 20 + 10, current.y * 20 + 10, next.x * 20 + 10, next.y * 20 + 10);
         }
 
         if(path.length > 0){
@@ -96,53 +97,52 @@ public class Panel extends JPanel {
      * This function finds the path to the end
      */
     private void findPath(Node current){
-        if(current != null || found){ //if there is no current node or the path has been found
+        if (current == null || found) { //if there is no current node or the path has been found
             return;
         }
 
-        for(String value: visited){ //check the current node against the nodes we already have visited
-            if(value != null && current.name.equalsIgnoreCase(value)){
+        for (String value : visited) { //check the current node against the nodes we already have visited
+            if (value != null && current.name.equalsIgnoreCase(value)) {
                 return;
             }
         }
-
-        changeColour(current, Color.RED); //colouring the current node to red
+        changeColour(current, Color.RED); //colouring in red
         currentPath.push(current); //add the current node to the top of the path
+        visited[index++] = current.name; //add the current node to the visited list (ensures it won't be revisited again)
 
-        if(current.name.equalsIgnoreCase("EXIT")){ //if the value is exit
+        if (current.name.equalsIgnoreCase("EXIT")) { //if the value is exit
             found = true; //found the path
             printPath(); //printing the path in green
-            repaint(); //repainting it to actually show
+            repaint(); //repainting it to actually show it
             return;
         }
 
-        try{ //wait to make it more of an animation
+        try { //wait to make it more of an animation
             Thread.sleep(500);
-        }catch(InterruptedException e){
-            System.out.println("InterruptedException in find path");
+        } catch (InterruptedException e) {
+            System.out.println("interruptedException in find path");
         }
 
-        if(current.left != null && !found){//if there is a value to the left and the path hasn't been found go to the left
+        if (current.left != null && !found) { //if there is a value to the left and path not found go left
             changeColour(current, Color.BLUE); //change back to blue - so red shows as the current one
-            findPath(current.left);
+            findPath(current.left); 
         }
-
-        if(current.right != null && !found){//if there is a value to the right and the path hasn't been found go to the right
-            changeColour(current, Color.BLUE); //change back to blue - so red shows as the current one
+        if (current.right != null && !found) { //if there is value to the right and the path has not been found go right
+            changeColour(current, Color.BLUE); //change back to blue
             findPath(current.right);
         }
-
-        if(!found){ //if the path has not been found continue - if this was not here it would pop the whole stack and make the path not found
+        
+        if (!found) { //if the path has not been found continue - if this was not here it would pop the whole stack and make the path not found
             changeColour(current, Color.BLUE); //change back to blue
             currentPath.pop(); //remove from stack as this isn't in the path
-            current = (Node) currentPath.peek();
+            current = (Node) currentPath.peek(); //change the current top of the path to red
             changeColour(current, Color.RED);
-            try{
+            try {
                 Thread.sleep(500); //wait to make it more of an animation
-            }catch(InterruptedException e){
-                System.out.println("InterrupedException in find path");
+            } catch (InterruptedException e) {
+                System.out.println("interruptedException in find path");
             }
-            changeColour(current, Color. BLUE); //change back to blue and continue
+            changeColour(current, Color.BLUE); //change back to blue and continue
         }
     }
 
